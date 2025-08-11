@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>รับออเดอร์ — ร้านของฉัน</title>
+  <style>
+    :root {
+      --bg: #f7f7fb;
+      --card: #ffffff;
+      --ink: #111827;
+      --muted: #6b7280;
+      --brand: #2563eb;
+      --ok: #10b981;
+      --danger:#ef4444;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--ink); }
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    header { display:flex; justify-content:space-between; align-items:center; }
+    .brand { font-size: 20px; font-weight: bold; }
+    .pill { background: #eef2ff; padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+    .grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+    @media(max-width: 960px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border-radius: var(--radius); box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .card h2 { font-size: 16px; margin: 0; padding: 14px 16px; border-bottom: 1px solid #eee; }
+    .card .body { padding: 16px; }
+    .products { display: grid; grid-template-columns: repeat(auto-fill,minmax(210px,1fr)); gap: 14px; }
+    .prod { border: 1px solid #eee; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .prod h3 { font-size: 14px; margin: 0; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .row { display: flex; justify-content: space-between; align-items: center; }
+    .price { font-weight: bold; }
+    .qty { display: flex; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+    .qty button { background: #f3f4f6; border: none; width: 32px; height: 32px; cursor: pointer; }
+    .qty input { width: 46px; text-align: center; border: none; }
+    .btn { border: none; background: var(--brand); color: white; padding: 10px 12px; border-radius: 12px; cursor: pointer; }
+    .btn.secondary { background: #111827; }
+    .btn.ghost { background: #eef2ff; color: #3730a3; }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field input, .field textarea, .field select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid #e5e7eb; font-size: 14px; }
+    .totals { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 14px; }
+    .totals div:last-child { text-align: right; }
+    .total { font-weight: bold; font-size: 16px; }
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #ecfeff; color: #155e75; border: 1px solid #a5f3fc; }
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .item { display: grid; grid-template-columns: 1fr 70px 90px 24px; align-items: center; gap: 8px; border: 1px solid #eee; border-radius: 12px; padding: 8px 10px; }
+    .item .name { font-size: 13px; }
+    .item .subtotal { text-align: right; font-weight: bold; }
+    .item .remove { cursor: pointer; color: var(--danger); font-weight: bold; text-align: center; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">Delphi.Studio — รับออเดอร์</div>
+      <div class="pill">ไฟล์เดียว • เปิดใช้ได้ทันที</div>
+    </header>
+    <div class="grid">
+      <section class="card">
+        <h2>รายการสินค้า</h2>
+        <div class="body">
+          <div class="products" id="products"></div>
+        </div>
+      </section>
+      <aside class="stack">
+        <section class="card">
+          <h2>ตะกร้าสินค้า</h2>
+          <div class="body">
+            <div id="cartList" class="list"></div>
+            <div class="totals">
+              <div>ยอดรวม</div><div id="sum">฿0</div>
+              <div>ค่าจัดส่ง</div><div><select id="shipping"><option value="0">ฟรี</option><option value="40">฿40</option></select></div>
+              <div class="total">ชำระทั้งสิ้น</div><div id="grand">฿0</div>
+            </div>
+            <button class="btn ghost" id="btnClear">ล้างตะกร้า</button>
+          </div>
+        </section>
+        <section class="card">
+          <h2>ข้อมูลลูกค้า</h2>
+          <div class="body stack">
+            <div class="field"><label>ชื่อลูกค้า</label><input id="custName" /></div>
+            <div class="field"><label>เบอร์โทร</label><input id="custPhone" /></div>
+            <div class="field"><label>ที่อยู่</label><textarea id="custAddr"></textarea></div>
+            <button class="btn" id="btnWhatsApp">ส่งผ่าน WhatsApp</button>
+            <button class="btn secondary" id="btnEmail">ส่งทาง Email</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+    <footer>
+      <div>© <span id="year"></span> ร้านของฉัน</div>
+    </footer>
+  </div>
+  <template id="productTemplate">
+    <div class="prod">
+      <img class="thumb" style="width:100%; aspect-ratio: 4/3; object-fit:cover; border-radius:10px; background:#f3f4f6" />
+      <h3 class="title"></h3>
+      <div class="muted desc"></div>
+      <div class="row">
+        <div class="price"></div>
+        <div class="qty">
+          <button class="dec">–</button>
+          <input class="qtyInput" type="number" min="0" value="0" />
+          <button class="inc">+</button>
+        </div>
+      </div>
+      <button class="btn add">หยิบใส่ตะกร้า</button>
+    </div>
+  </template>
+  <script>
+    const PRODUCTS = [
+      { id: 'P1', name: 'กิ๊บติดชื่อรุ่น Signature', price: 249, desc: 'เลือกสี/ตัวอักษรได้', img: 'https://via.placeholder.com/300' },
+      { id: 'P2', name: 'ยางมัดผม', price: 89, desc:, img: 'https://via.placeholder.com/300' }
+    ];
+    const fmt = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 });
+    const $ = (s, el=document) => el.querySelector(s);
+    const cart = { items:{}, add(p, q=1){ if(!this.items[p.id]) this.items[p.id] = {...p, qty:0}; this.items[p.id].qty += q; if(this.items[p.id].qty<=0) delete this.items[p.id]; renderCart(); }, clear(){this.items={}; renderCart();}, sum(){return Object.values(this.items).reduce((a,b)=>a+b.price*b.qty,0);} };
+    function renderProducts(){ const wrap=$('#products'); wrap.innerHTML=''; PRODUCTS.forEach(p=>{ const t=$('#productTemplate').content.cloneNode(true); $('.thumb',t).src=p.img; $('.title',t).textContent=p.name; $('.desc',t).textContent=p.desc; $('.price',t).textContent=fmt.format(p.price); const qty=$('.qtyInput',t); $('.dec',t).onclick=()=>qty.value=Math.max(0,(+qty.value||0)-1); $('.inc',t).onclick=()=>qty.value=(+qty.value||0)+1; $('.add',t).onclick=()=>cart.add(p,+qty.value||1); wrap.appendChild(t); }); }
+    function renderCart(){ const list=$('#cartList'); list.innerHTML=''; Object.values(cart.items).forEach(it=>{ const div=document.createElement('div'); div.className='item'; div.innerHTML=`<div class='name'>${it.name} <span class='badge'>฿${it.price}</span></div><div>${it.qty}</div><div class='subtotal'>${fmt.format(it.price*it.qty)}</div><div class='remove'>×</div>`; $('.remove',div).onclick=()=>{delete cart.items[it.id]; renderCart();}; list.appendChild(div); }); $('#sum').textContent=fmt.format(cart.sum()); updateGrand(); }
+    function updateGrand(){ const ship=+$('#shipping').value; $('#grand').textContent=fmt.format(cart.sum()+ship); }
+    $('#shipping').onchange=updateGrand;
+    $('#btnClear').onclick=()=>cart.clear();
+    $('#year').textContent=new Date().getFullYear();
+    renderProducts();
+  </script>
+</body>
+</html>
